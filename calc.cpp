@@ -22,7 +22,6 @@ public:
 
     double evaluate(const std::string& expression) {
         std::string tokenized = tokenize(expression);
-        std::cout << "[DEBUG] tokenized='" << tokenized << "'\n";
         std::stack<double> values;
         std::stack<char> ops;
         std::istringstream iss(tokenized);
