@@ -6,17 +6,17 @@ echo "Installing dependencies..."
 sudo apt update > /dev/null 2>&1
 sudo apt install -y build-essential cmake git > /dev/null 2>&1
 
-g++ ./prime.cpp -o prime
-chmod +x ./prime
+g++ ./prime.cpp -o prime-code
+chmod +x ./prime-code
 
-g++ ./calc.cpp -o calc
-chmod +x ./calc
+g++ ./calc.cpp -o calc-code
+chmod +x ./calc-code
 
 echo "Code compiled successfully."
 
 mkdir -p /home/$(whoami)/cli-calculator
-cp ./calc /home/$(whoami)/cli-calculator
-cp ./prime /home/$(whoami)/cli-calculator
+cp ./calc-code /home/$(whoami)/cli-calculator
+cp ./prime-code /home/$(whoami)/cli-calculator
 
 echo "Files copied to /home/$(whoami)/cli-calculator"
 
