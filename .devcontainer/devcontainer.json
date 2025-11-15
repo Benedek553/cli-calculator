@@ -1,0 +1,29 @@
+{
+  "name": "C++ Dev Environment",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+
+  "postCreateCommand": "sudo apt update && sudo apt install -y build-essential cmake cppcheck valgrind",
+
+  "forwardPorts": [8080, 3000],
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "twxs.cmake",
+        "ms-vscode.cpptools-extension-pack",
+        "vadimcn.vscode-lldb",
+        "mutantdino.resourcemonitor",
+        "eamodio.gitlens",
+        "ms-azuretools.vscode-docker",
+        "openai.chatgpt",
+        "GitHub.copilot"
+      ]
+    }
+  }
+}

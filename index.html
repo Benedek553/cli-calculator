@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CLI-Calculator by Benedek553</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --card: #1a1a1a;
+      --text: #e6e6e6;
+      --accent: #4da6ff;
+      --accent-dark: #1a8cff;
+      --border: #333333;
+      --mono: "Fira Code", "JetBrains Mono", monospace;
+      --pre-bg: #0f0f0f;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 15px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      margin-bottom: 10px;
+      color: var(--accent);
+      text-shadow: 0 0 15px rgba(77,166,255,0.4);
+    }
+
+    p.subtitle {
+      font-size: 1.2rem;
+      opacity: 0.8;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .card {
+      background: var(--card);
+      padding: 25px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      box-shadow: 0 0 12px rgba(0,0,0,0.4);
+    }
+
+    .section-title {
+      font-size: 1.6rem;
+      margin-bottom: 10px;
+      color: var(--accent);
+    }
+
+    pre {
+      background: var(--pre-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px;
+      overflow-x: auto;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    code {
+      font-family: var(--mono);
+    }
+
+    a.button {
+      display: inline-block;
+      background: var(--accent);
+      padding: 12px 20px;
+      color: black;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    a.button:hover {
+      background: var(--accent-dark);
+    }
+
+    footer {
+      margin-top: 40px;
+      opacity: 0.6;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2.2rem; }
+      .section-title { font-size: 1.3rem; }
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+</head>
+<body>
+  <header>
+    <h1>CLI-Calculator</h1>
+    <p class="subtitle">Open-source, modern C++ command-line calculator</p>
+  </header>
+
+  <button id="theme-toggle" style="position: fixed; top: 20px; right: 20px; background: var(--accent); border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-family: var(--mono); font-weight: bold;">Toggle Theme</button>
+
+  <div class="container">
+    <div class="card">
+      <h2 class="section-title">🚀 Installation</h2>
+      <pre><code>git clone https://github.com/Benedek553/cli-calculator
+cd cli-calculator
+mkdir build && cd build
+cmake ..
+make
+./cli-calculator
+</code></pre>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">💡 Main Features</h2>
+      <ul>
+        <li>Fast arithmetic operations</li>
+        <li>Decimal, binary, hexadecimal conversions</li>
+        <li>Clean C++ implementation</li>
+        <li>Active development with frequent updates</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">🔧 Usage Examples</h2>
+      <pre><code>$ cli-calculator --add 120 44
+= 164
+
+$ cli-calculator --hex 255
+= 0xFF
+</code></pre>
+    </div>
+
+    <div class="card" style="text-align:center;">
+      <a href="https://github.com/Benedek553/cli-calculator" class="button">Open GitHub Repository</a>
+    </div>
+  </div>
+
+  <footer>
+    CLI-Calculator • Developed by Benedek553
+  </footer>
+
+<script>
+  const toggle = document.getElementById('theme-toggle');
+  const root = document.documentElement;
+
+  toggle.addEventListener('click', () => {
+    if (root.dataset.theme === 'light') {
+      root.dataset.theme = 'dark';
+      setDark();
+    } else {
+      root.dataset.theme = 'light';
+      setLight();
+    }
+  });
+
+  function setLight() {
+    root.style.setProperty('--bg', '#f0f0f0');
+    root.style.setProperty('--card', '#ffffff');
+    root.style.setProperty('--text', '#000000');
+    root.style.setProperty('--accent', '#0066cc');
+    root.style.setProperty('--accent-dark', '#004c99');
+    root.style.setProperty('--border', '#cccccc');
+    root.style.setProperty('--pre-bg', '#f7f7f7');
+  }
+
+  function setDark() {
+    root.style.setProperty('--bg', '#0d0d0d');
+    root.style.setProperty('--card', '#1a1a1a');
+    root.style.setProperty('--text', '#e6e6e6');
+    root.style.setProperty('--accent', '#4da6ff');
+    root.style.setProperty('--accent-dark', '#1a8cff');
+    root.style.setProperty('--border', '#333333');
+    root.style.setProperty('--pre-bg', '#0f0f0f');
+  }
+
+  root.dataset.theme = 'dark';
+  setDark();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+  window.addEventListener('load', () => {
+    if (window.hljs) {
+      document.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+    }
+  });
+</script>
+</body>
+</html>
