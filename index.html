@@ -1,211 +1,253 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CLI-Calculator by Benedek553</title>
-  <style>
-    :root {
-      --bg: #0d0d0d;
-      --card: #1a1a1a;
-      --text: #e6e6e6;
-      --accent: #4da6ff;
-      --accent-dark: #1a8cff;
-      --border: #333333;
-      --mono: "Fira Code", "JetBrains Mono", monospace;
-      --pre-bg: #0f0f0f;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CLI Calculator</title>
+<style>
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--mono);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 15px;
+        margin: 0;
+        background: #000;
+        color: #fff;
+        font-family: "JetBrains Mono", monospace;
+        line-height: 1.6;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+            linear-gradient(transparent 95%, rgba(255,255,255,0.06) 100%),
+            linear-gradient(90deg, transparent 95%, rgba(255,255,255,0.06) 100%);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
     }
 
     header {
-      text-align: center;
-      margin-bottom: 50px;
+        padding: 20px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        z-index: 1;
     }
 
-    h1 {
-      font-size: 2.8rem;
-      margin-bottom: 10px;
-      color: var(--accent);
-      text-shadow: 0 0 15px rgba(77,166,255,0.4);
+    .brand {
+        font-weight: bold;
+        font-size: 20px;
     }
 
-    p.subtitle {
-      font-size: 1.2rem;
-      opacity: 0.8;
+    nav a {
+        margin-left: 30px;
+        color: #ccc;
+        text-decoration: none;
+        font-size: 15px;
+    }
+    nav a:hover { color: #fff; }
+
+    .hero {
+        padding: 100px 40px;
+        position: relative;
+        z-index: 1;
+        max-width: 900px;
     }
 
-    .container {
-      width: 100%;
-      max-width: 900px;
-      display: flex;
-      flex-direction: column;
-      gap: 25px;
+    .hero h1 {
+        font-size: 75px;
+        font-weight: 700;
+        margin: 0 0 20px 0;
+        line-height: 1.1;
     }
 
-    .card {
-      background: var(--card);
-      padding: 25px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      box-shadow: 0 0 12px rgba(0,0,0,0.4);
+    .hero .subtitle {
+        font-size: 22px;
+        color: #ccc;
+        margin-bottom: 40px;
     }
 
-    .section-title {
-      font-size: 1.6rem;
-      margin-bottom: 10px;
-      color: var(--accent);
+    .buttons a {
+        display: inline-block;
+        border: 1px solid #fff;
+        padding: 12px 22px;
+        margin-right: 20px;
+        color: #fff;
+        text-decoration: none;
+        font-size: 16px;
+        cursor: none;
     }
 
-    pre {
-      background: var(--pre-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 18px;
-      overflow-x: auto;
-      font-size: 0.95rem;
-      line-height: 1.5;
+    .buttons a:hover {
+        background: #fff;
+        color: #000;
     }
 
-    code {
-      font-family: var(--mono);
+    .section {
+        padding: 60px 40px;
+        max-width: 1000px;
+        position: relative;
+        z-index: 1;
     }
 
-    a.button {
-      display: inline-block;
-      background: var(--accent);
-      padding: 12px 20px;
-      color: black;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: bold;
-      transition: 0.2s;
+    .code {
+        background: #0a0a0a;
+        border: 1px solid #333;
+        padding: 20px;
+        white-space: pre-wrap;
+        font-size: 15px;
+        overflow-x: auto;
     }
 
-    a.button:hover {
-      background: var(--accent-dark);
+    h2 {
+        font-size: 32px;
+        margin-bottom: 15px;
+        margin-top: 40px;
+      }
+    .custom-cursor {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 32px;
+        height: 32px;
+        margin: -16px 0 0 -16px;
+        border: 2px solid #fff;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9999;
+        transition: background 0.2s ease;
     }
 
-    footer {
-      margin-top: 40px;
-      opacity: 0.6;
-      font-size: 0.9rem;
+    .cursor-dot {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 6px;
+        height: 6px;
+        background: #fff;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: transform 0.05s linear;
     }
-
-    @media (max-width: 600px) {
-      h1 { font-size: 2.2rem; }
-      .section-title { font-size: 1.3rem; }
+    .invert {
+        background: #fff;
+        color: #000;
     }
-  </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+</style>
 </head>
 <body>
-  <header>
-    <h1>CLI-Calculator</h1>
-    <p class="subtitle">Open-source, modern C++ command-line calculator</p>
-  </header>
 
-  <button id="theme-toggle" style="position: fixed; top: 20px; right: 20px; background: var(--accent); border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-family: var(--mono); font-weight: bold;">Toggle Theme</button>
+<header>
+    <div class="brand">CLI-CALCULATOR</div>
+    <nav>
+        <a href="#features">Features</a>
+        <a href="#install">Install</a>
+        <a href="https://github.com/Benedek553/cli-calculator/blob/main/README.md">Docs</a>
+        <a href="https://github.com/Benedek553/cli-calculator" target="_blank">GitHub</a>
+    </nav>
+</header>
 
-  <div class="container">
-    <div class="card">
-      <h2 class="section-title">🚀 Installation</h2>
-      <pre><code>git clone https://github.com/Benedek553/cli-calculator
-cd cli-calculator
-mkdir build && cd build
-cmake ..
-make
-./cli-calculator
-</code></pre>
+<section class="hero">
+    <div class="code">
+$ cli-calculator --eval 2 * (3 + 4)  
+# → 14
     </div>
 
-    <div class="card">
-      <h2 class="section-title">💡 Main Features</h2>
-      <ul>
-        <li>Fast arithmetic operations</li>
-        <li>Decimal, binary, hexadecimal conversions</li>
-        <li>Clean C++ implementation</li>
-        <li>Active development with frequent updates</li>
-      </ul>
+    <h1>Precision unleashed.<br>Math at the speed of thought.</h1>
+
+    <div class="subtitle">
+        Pure C++. Zero overhead.<br>A calculator that works as fast as you think.
     </div>
 
-    <div class="card">
-      <h2 class="section-title">🔧 Usage Examples</h2>
-      <pre><code>$ cli-calculator --add 120 44
-= 164
-
-$ cli-calculator --hex 255
-= 0xFF
-</code></pre>
+    <div class="buttons">
+        <a href="https://snapcraft.io/cli-calculator" target="_blank">INSTALL</a>
+        <a href="https://github.com/Benedek553/cli-calculator/blob/main/README.md" target="_blank">DOCS</a>
     </div>
+</section>
 
-    <div class="card" style="text-align:center;">
-      <a href="https://github.com/Benedek553/cli-calculator" class="button">Open GitHub Repository</a>
-    </div>
-  </div>
+<section id="features" class="section">
+<h2>Features</h2>
 
-  <footer>
-    CLI-Calculator • Developed by Benedek553
-  </footer>
+<ul>
+    <li>Evaluate complex expressions with trig/log/sqrt and factorial.</li>
+    <li>Binary ⇆ Decimal ⇆ Hexadecimal conversions with sign support.</li>
+    <li>Divisor calculation for any integer.</li>
+    <li>Equation solving (linear, quadratic, complex roots handled).</li>
+    <li>Interactive or one-shot CLI mode.</li>
+    <li>ANSI color output (optional <code>--no-color</code> flag).</li>
+</ul>
+
+<h2 id="install">Installation</h2>
+
+<div class="code">
+sudo snap install cli-calculator
+cli-calculator
+</div>
+
+<h2>Build from source</h2>
+
+<div class="code">
+cmake -S . -B build
+cmake --build build --config Release
+./build/src/calculator
+</div>
+
+<h2 id="docs">CLI Examples</h2>
+
+<div class="code">
+# Convert decimal 78 → hex
+cli-calculator --convert 10 16 78
+# → 0x4E
+
+# Evaluate an expression
+cli-calculator --eval "sin(0.5) + exp(1)"
+# Divisors of 120
+cli-calculator --divisors 120
+</div>
+<div class="custom-cursor">
+    <div class="cursor-dot"></div>
+</div>
 
 <script>
-  const toggle = document.getElementById('theme-toggle');
-  const root = document.documentElement;
+    const cursor = document.querySelector(".custom-cursor");
+    const dot = document.querySelector(".cursor-dot");
 
-  toggle.addEventListener('click', () => {
-    if (root.dataset.theme === 'light') {
-      root.dataset.theme = 'dark';
-      setDark();
-    } else {
-      root.dataset.theme = 'light';
-      setLight();
+    let mouseX = 0, mouseY = 0;
+    let dotX = 0, dotY = 0;
+
+    const lerp = (a, b, n) => (1 - n) * a + n * b;
+
+    document.addEventListener("mousemove", e => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+
+        cursor.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
+    });
+
+    function animate() {
+        dotX = lerp(dotX, mouseX, 0.15);
+        dotY = lerp(dotY, mouseY, 0.15);
+
+
+        const rect = cursor.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+
+        const dx = dotX - cx;
+        const dy = dotY - cy;
+
+        const maxOffset = 12;
+        const dist = Math.hypot(dx, dy);
+        const ratio = dist > maxOffset ? maxOffset / dist : 1;
+
+        dot.style.transform = `translate(${dx * ratio}px, ${dy * ratio}px)`;
+
+        requestAnimationFrame(animate);
     }
-  });
 
-  function setLight() {
-    root.style.setProperty('--bg', '#f0f0f0');
-    root.style.setProperty('--card', '#ffffff');
-    root.style.setProperty('--text', '#000000');
-    root.style.setProperty('--accent', '#0066cc');
-    root.style.setProperty('--accent-dark', '#004c99');
-    root.style.setProperty('--border', '#cccccc');
-    root.style.setProperty('--pre-bg', '#f7f7f7');
-  }
+    animate();
 
-  function setDark() {
-    root.style.setProperty('--bg', '#0d0d0d');
-    root.style.setProperty('--card', '#1a1a1a');
-    root.style.setProperty('--text', '#e6e6e6');
-    root.style.setProperty('--accent', '#4da6ff');
-    root.style.setProperty('--accent-dark', '#1a8cff');
-    root.style.setProperty('--border', '#333333');
-    root.style.setProperty('--pre-bg', '#0f0f0f');
-  }
-
-  root.dataset.theme = 'dark';
-  setDark();
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script>
-  window.addEventListener('load', () => {
-    if (window.hljs) {
-      document.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
-    }
-  });
+    document.body.style.cursor = "none";
 </script>
 </body>
 </html>
