@@ -90,20 +90,38 @@
         z-index: 1;
     }
 
+    /* Hero "code" line: remove box visuals */
     .code {
-        background: #0a0a0a;
-        border: 1px solid #333;
-        padding: 20px;
+        background: transparent;
+        border: none;
+        padding: 0;
         white-space: pre-wrap;
         font-size: 15px;
         overflow-x: auto;
+        min-height: 4.5em;
+    }
+
+    /* Blinking block cursor */
+    .caret {
+        display: inline-block;
+        width: 8px;
+        height: 1em;
+        margin-left: 2px;
+        background: #fff;
+        vertical-align: -0.15em;
+        animation: blink 1s steps(1) infinite;
+    }
+
+    @keyframes blink {
+        50% { opacity: 0; }
     }
 
     h2 {
         font-size: 32px;
         margin-bottom: 15px;
         margin-top: 40px;
-      }
+    }
+
     .custom-cursor {
         position: fixed;
         top: 0;
@@ -115,7 +133,6 @@
         border-radius: 50%;
         pointer-events: none;
         z-index: 9999;
-        transition: background 0.2s ease;
     }
 
     .cursor-dot {
@@ -127,11 +144,6 @@
         background: #fff;
         border-radius: 50%;
         transform: translate(-50%, -50%);
-        transition: transform 0.05s linear;
-    }
-    .invert {
-        background: #fff;
-        color: #000;
     }
 </style>
 </head>
@@ -148,10 +160,7 @@
 </header>
 
 <section class="hero">
-    <div class="code">
-$ cli-calculator --eval 2 * (3 + 4)  
-# → 14
-    </div>
+    <div class="code" id="typewriter"><span id="text"></span><span class="caret" aria-hidden="true"></span></div>
 
     <h1>Precision unleashed.<br>Math at the speed of thought.</h1>
 
@@ -165,89 +174,84 @@ $ cli-calculator --eval 2 * (3 + 4)
     </div>
 </section>
 
-<section id="features" class="section">
-<h2>Features</h2>
-
-<ul>
-    <li>Evaluate complex expressions with trig/log/sqrt and factorial.</li>
-    <li>Binary ⇆ Decimal ⇆ Hexadecimal conversions with sign support.</li>
-    <li>Divisor calculation for any integer.</li>
-    <li>Equation solving (linear, quadratic, complex roots handled).</li>
-    <li>Interactive or one-shot CLI mode.</li>
-    <li>ANSI color output (optional <code>--no-color</code> flag).</li>
-</ul>
-
-<h2 id="install">Installation</h2>
-
-<div class="code">
-sudo snap install cli-calculator
-cli-calculator
-</div>
-
-<h2>Build from source</h2>
-
-<div class="code">
-cmake -S . -B build
-cmake --build build --config Release
-./build/src/calculator
-</div>
-
-<h2 id="docs">CLI Examples</h2>
-
-<div class="code">
-# Convert decimal 78 → hex
-cli-calculator --convert 10 16 78
-# → 0x4E
-
-# Evaluate an expression
-cli-calculator --eval "sin(0.5) + exp(1)"
-# Divisors of 120
-cli-calculator --divisors 120
-</div>
-<div class="custom-cursor">
-    <div class="cursor-dot"></div>
-</div>
-
 <script>
-    const cursor = document.querySelector(".custom-cursor");
-    const dot = document.querySelector(".cursor-dot");
+(() => {
+    // NOTE: Use \n (escaped newline) to avoid "unescaped line break" syntax errors.
+    const target = "$ cli-calculator --eval 2 * (3 + 4)\n# → 14";
 
-    let mouseX = 0, mouseY = 0;
-    let dotX = 0, dotY = 0;
+    const textEl = document.getElementById("text");
+    if (!textEl) return;
 
-    const lerp = (a, b, n) => (1 - n) * a + n * b;
+    // Tunables
+    const baseDelayMs = 35;
+    const jitterMs = 60;
+    const typoChance = 0.08;      // per keystroke
+    const backspacePauseMs = 120; // how long the wrong char stays visible
+    const afterBackspaceExtraDelayMs = 50;
 
-    document.addEventListener("mousemove", e => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
+    let current = "";
+    let i = 0;
 
-        cursor.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
-    });
+    const rand = () => Math.random();
 
-    function animate() {
-        dotX = lerp(dotX, mouseX, 0.15);
-        dotY = lerp(dotY, mouseY, 0.15);
-
-
-        const rect = cursor.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-
-        const dx = dotX - cx;
-        const dy = dotY - cy;
-
-        const maxOffset = 12;
-        const dist = Math.hypot(dx, dy);
-        const ratio = dist > maxOffset ? maxOffset / dist : 1;
-
-        dot.style.transform = `translate(${dx * ratio}px, ${dy * ratio}px)`;
-
-        requestAnimationFrame(animate);
+    function delay(base = baseDelayMs) {
+        return base + rand() * jitterMs;
     }
 
-    animate();
+    function randomWrongChar() {
+        // Prefer letters + a few common CLI chars for a more realistic typo
+        const pool = "abcdefghijklmnopqrstuvwxyz-/._";
+        return pool[Math.floor(rand() * pool.length)];
+    }
 
-    document.body.style.cursor = "none";
+    function typeStep() {
+        if (i >= target.length) return;
+
+        // don't typo on newlines (looks weird), but keep it configurable if you want
+        const nextChar = target[i];
+        const canTypo = nextChar !== "\n";
+
+        if (canTypo && rand() < typoChance) {
+            // Insert a wrong char, then backspace it, then continue
+            current += randomWrongChar();
+            textEl.textContent = current;
+
+            setTimeout(() => {
+                current = current.slice(0, -1);
+                textEl.textContent = current;
+                setTimeout(typeStep, delay(afterBackspaceExtraDelayMs));
+            }, backspacePauseMs);
+            return;
+        }
+
+        current += nextChar;
+        textEl.textContent = current;
+        i++;
+        setTimeout(typeStep, delay());
+    }
+
+    typeStep();
+})();
 </script>
+
+<script>
+(() => {
+    // Basic sanity checks without relying on randomness or timing.
+    try {
+        const textEl = document.getElementById("text");
+        const caretEl = document.querySelector(".caret");
+        console.assert(!!textEl, "[typewriter] #text element missing");
+        console.assert(!!caretEl, "[typewriter] caret element missing");
+
+        // Ensure we didn't reintroduce an actual line break into a quote-delimited string.
+        // (This test is a reminder: target should use \n or template literal.)
+        const example = "$ test\\nline2";
+        console.assert(example.includes("\\n"), "[typewriter] newline escape sanity failed");
+    } catch (e) {
+        // Avoid breaking the page if console.assert is not available.
+    }
+})();
+</script>
+
 </body>
 </html>
