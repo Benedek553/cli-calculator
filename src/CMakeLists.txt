@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 find_package(ZLIB REQUIRED)
+find_package(Boost REQUIRED)
 
 set(CORE_SOURCES
     core/divisors_lib.cpp
@@ -44,7 +45,7 @@ set(COMMON_INCLUDES
 add_library(calculator_core ${CORE_SOURCES})
 target_include_directories(calculator_core PUBLIC ${COMMON_INCLUDES})
 target_compile_definitions(calculator_core PUBLIC CLI_CALCULATOR_VERSION="${PROJECT_VERSION}")
-target_link_libraries(calculator_core PUBLIC ZLIB::ZLIB)
+target_link_libraries(calculator_core PUBLIC ZLIB::ZLIB Boost::boost)
 
 add_executable(divisors ${TOOLS_SOURCES})
 add_executable(calculator ${APP_SOURCES})
