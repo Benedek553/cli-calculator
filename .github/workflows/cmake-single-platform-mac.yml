@@ -25,6 +25,7 @@ jobs:
     - name: Install CLI tools and Homebrew
       run: |
           brew install boost
+          brew install tree
           echo "BOOST_ROOT=$(brew --prefix boost)" >> $GITHUB_ENV
 
     - name: Vendor Homebrew packages into workspace
@@ -48,6 +49,7 @@ jobs:
       run: |
         echo "Boost include preview:"
         ls -la "$GITHUB_WORKSPACE/cmake/third_party/boost/include" | head -n 20 || true
+        tree "$GITHUB_WORKSPACE/cmake/third_party/boost/include"
 
     - name: Build
       # Build your program with the given configuration
