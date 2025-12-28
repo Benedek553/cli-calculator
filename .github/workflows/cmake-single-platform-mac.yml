@@ -25,11 +25,15 @@ jobs:
     - name: Install CLI tools and Homebrew
       run: |
           brew install boost
-    
+          echo "BOOST_ROOT=$(brew --prefix boost)" >> $GITHUB_ENV
+
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}/build \
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+          -DBOOST_ROOT=${{env.BOOST_ROOT}} \
+          -DCMAKE_PREFIX_PATH=${{env.BOOST_ROOT}}
 
     - name: Build
       # Build your program with the given configuration
