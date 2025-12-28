@@ -49,7 +49,7 @@ jobs:
       run: |
         echo "Boost include preview:"
         ls -la "$GITHUB_WORKSPACE/cmake/third_party/boost/include" | head -n 20 || true
-        tree "$GITHUB_WORKSPACE/cmake/third_party/boost/include/multiprecision"
+        find . -type d -ls "$GITHUB_WORKSPACE/cmake/third_party/boost/"
 
     - name: Build
       # Build your program with the given configuration
