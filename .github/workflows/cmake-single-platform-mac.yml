@@ -43,7 +43,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: cli-calculator-mac
+        name: cli-calculator-macos
         path: |
           ${{github.workspace}}/build/src/calculator*
           ${{github.workspace}}/build/src/divisors*
