@@ -1,4 +1,4 @@
-name: CMake on a single platform with vcpkg
+name: CMake / Xcode on macOS with Conan
 
 on:
   push:
@@ -8,42 +8,113 @@ on:
 
 env:
   BUILD_TYPE: Release
-  VCPKG_ROOT: ${{github.workspace}}/vcpkg
-  # change triplet to x64-osx if you need Intel macOS runners
-  VCPKG_TRIPLET: arm64-osx
+  CONAN_BUILD_DIR: build
+  CONAN_SETTINGS: "-s os=Macos -s build_type=${{ env.BUILD_TYPE }}"
 
 jobs:
-  build:
+  cmake_with_conan:
+    name: CMake + Conan
     runs-on: macos-latest
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install/Bootstrap vcpkg
+      - name: Install Python and Conan
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install --upgrade conan
+
+      - name: Show Conan version
+        run: conan --version
+
+      - name: Conan install (generate CMake toolchain + virtual env)
         run: |
           set -e
-          git clone --depth=1 https://github.com/microsoft/vcpkg.git "${VCPKG_ROOT}"
-          pushd "${VCPKG_ROOT}"
-          ./bootstrap-vcpkg.sh -useSystemBinaries
-          popd
+          # adjust arch if you need x86_64: -s arch=x86_64
+          conan install . --install-folder=${{ env.CONAN_BUILD_DIR }} ${CONAN_SETTINGS} -s arch=armv8 --build=missing -g CMakeToolchain -g VirtualRunEnv
 
-      - name: Install Boost via vcpkg
+      - name: Configure CMake (use Conan toolchain)
         run: |
-          set -e
-          "${VCPKG_ROOT}"/vcpkg install boost --triplet="${VCPKG_TRIPLET}"
-          # optional: list installed ports for debugging
-          "${VCPKG_ROOT}"/vcpkg list
-
-      - name: Configure CMake (use vcpkg toolchain)
-        run: |
-          cmake -B "${{github.workspace}}/build" -S "${{github.workspace}}" \
-            -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-            -DCMAKE_TOOLCHAIN_FILE=${{env.VCPKG_ROOT}}/scripts/buildsystems/vcpkg.cmake \
-            -DVCPKG_TARGET_TRIPLET=${{env.VCPKG_TRIPLET}}
+          cmake -S . -B ${{ github.workspace }}/${{ env.CONAN_BUILD_DIR }} \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/${{ env.CONAN_BUILD_DIR }}/conan_toolchain.cmake
 
       - name: Build
-        run: cmake --build "${{github.workspace}}/build" --config ${{env.BUILD_TYPE}}
+        run: cmake --build ${{ github.workspace }}/${{ env.CONAN_BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
 
       - name: Test
-        working-directory: ${{github.workspace}}/build
-        run: ctest -C ${{env.BUILD_TYPE}}
+        working-directory: ${{ github.workspace }}/${{ env.CONAN_BUILD_DIR }}
+        run: ctest -C ${{ env.BUILD_TYPE }} --output-on-failure
+
+  xcode_with_conan:
+    name: Xcode + Conan
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Python and Conan
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install --upgrade conan
+
+      - name: Conan install (virtual env for Xcode)
+        run: |
+          set -e
+          # generate VirtualRunEnv to export include/library env vars for xcodebuild
+          conan install . --install-folder=${{ env.CONAN_BUILD_DIR }} ${CONAN_SETTINGS} -s arch=armv8 --build=missing -g VirtualRunEnv
+
+      - name: Activate Conan virtual run environment
+        run: |
+          set -e
+          if [ -f "${{ env.CONAN_BUILD_DIR }}/activate_run.sh" ]; then
+            source "${{ env.CONAN_BUILD_DIR }}/activate_run.sh"
+          elif [ -f "${{ env.CONAN_BUILD_DIR }}/activate.sh" ]; then
+            source "${{ env.CONAN_BUILD_DIR }}/activate.sh"
+          else
+            echo "No conan activate script found in ${{ env.CONAN_BUILD_DIR }}"
+          fi
+          env | egrep 'CMAKE_|CONAN_|CPLUS|C_INCLUDE|LIBRARY' || true
+
+      - name: Locate Xcode project/workspace
+        id: detect_xcode
+        run: |
+          set -e
+          WORKSPACE=$(find . -maxdepth 3 -name '*.xcworkspace' -print -quit || true)
+          PROJECT=$(find . -maxdepth 3 -name '*.xcodeproj' -print -quit || true)
+          if [ -n "$WORKSPACE" ]; then
+            echo "type=workspace" >> $GITHUB_OUTPUT
+            echo "path=$WORKSPACE" >> $GITHUB_OUTPUT
+          elif [ -n "$PROJECT" ]; then
+            echo "type=project" >> $GITHUB_OUTPUT
+            echo "path=$PROJECT" >> $GITHUB_OUTPUT
+          else
+            echo "type=none" >> $GITHUB_OUTPUT
+            echo "path=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build with xcodebuild (auto-detect)
+        run: |
+          set -e
+          TYPE="${{ steps.detect_xcode.outputs.type }}"
+          PATH_X="${{ steps.detect_xcode.outputs.path }}"
+          if [ "$TYPE" = "none" ]; then
+            echo "No Xcode project or workspace found. Skipping xcodebuild."
+            exit 0
+          fi
+
+          # prefer workspace if present; try to pick first scheme if needed
+          if [ "$TYPE" = "workspace" ]; then
+            echo "Using workspace: $PATH_X"
+            SCHEMES=$(xcodebuild -workspace "$PATH_X" -list -json 2>/dev/null || xcodebuild -workspace "$PATH_X" -list 2>/dev/null)
+            SCHEME=$(echo "$SCHEMES" | sed -n 's/.*Schemes: *//p' | tr -d '[],' | awk '{print $1}' || true)
+            if [ -z "$SCHEME" ]; then
+              # fallback: build all targets in workspace
+              xcodebuild -workspace "$PATH_X" -configuration ${{ env.BUILD_TYPE }} build
+            else
+              xcodebuild -workspace "$PATH_X" -scheme "$SCHEME" -configuration ${{ env.BUILD_TYPE }} build
+            fi
+          else
+            echo "Using project: $PATH_X"
+            # build all targets in the project; pass through environment from Conan (include/lib paths)
+            xcodebuild -project "$PATH_X" -configuration ${{ env.BUILD_TYPE }} build
+          fi
+
