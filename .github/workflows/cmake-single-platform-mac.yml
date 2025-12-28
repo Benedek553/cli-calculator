@@ -36,10 +36,10 @@ jobs:
           echo "Copying boost from: $BOOST_PREFIX -> $VENDOR_DIR/boost"
           rsync -a "$BOOST_PREFIX/" "$VENDOR_DIR/boost/"
           # optional: also copy top-level Homebrew includes if you need them
-          if [ -d "/opt/homebrew/" ]; then
-            rsync -a /opt/homebrew/ "$VENDOR_DIR/homebrew/"
-          fi
-          ls -la "$VENDOR_DIR" || true
+          #if [ -d "/opt/homebrew/" ]; then
+          #  rsync -a /opt/homebrew/ "$VENDOR_DIR/homebrew/"
+          #fi
+          #ls -la "$VENDOR_DIR" || true
 
     - name: Configure CMake
       run: cmake -B "$GITHUB_WORKSPACE/build" -S "$GITHUB_WORKSPACE" -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBOOST_ROOT="$GITHUB_WORKSPACE/cmake/third_party/boost" -DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/cmake/third_party/boost"
