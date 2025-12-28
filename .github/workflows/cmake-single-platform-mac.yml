@@ -1,4 +1,4 @@
-name: CMake on mac
+name: CMake on a single platform with vcpkg
 
 on:
   push:
@@ -8,27 +8,42 @@ on:
 
 env:
   BUILD_TYPE: Release
+  VCPKG_ROOT: ${{github.workspace}}/vcpkg
+  # change triplet to x64-osx if you need Intel macOS runners
+  VCPKG_TRIPLET: arm64-osx
 
 jobs:
   build:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Install Boost via Homebrew
-      run: |
-        set -e
-        brew update
-        brew install boost
-        echo "BOOST_ROOT=$(brew --prefix boost)" >> $GITHUB_ENV
+      - name: Install/Bootstrap vcpkg
+        run: |
+          set -e
+          git clone --depth=1 https://github.com/microsoft/vcpkg.git "${VCPKG_ROOT}"
+          pushd "${VCPKG_ROOT}"
+          ./bootstrap-vcpkg.sh -useSystemBinaries
+          popd
 
-    - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBOOST_ROOT=${{env.BOOST_ROOT}} -DCMAKE_PREFIX_PATH=${{env.BOOST_ROOT}}
+      - name: Install Boost via vcpkg
+        run: |
+          set -e
+          "${VCPKG_ROOT}"/vcpkg install boost --triplet="${VCPKG_TRIPLET}"
+          # optional: list installed ports for debugging
+          "${VCPKG_ROOT}"/vcpkg list
 
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      - name: Configure CMake (use vcpkg toolchain)
+        run: |
+          cmake -B "${{github.workspace}}/build" -S "${{github.workspace}}" \
+            -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+            -DCMAKE_TOOLCHAIN_FILE=${{env.VCPKG_ROOT}}/scripts/buildsystems/vcpkg.cmake \
+            -DVCPKG_TARGET_TRIPLET=${{env.VCPKG_TRIPLET}}
 
-    - name: Test
-      working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{env.BUILD_TYPE}}
+      - name: Build
+        run: cmake --build "${{github.workspace}}/build" --config ${{env.BUILD_TYPE}}
+
+      - name: Test
+        working-directory: ${{github.workspace}}/build
+        run: ctest -C ${{env.BUILD_TYPE}}
