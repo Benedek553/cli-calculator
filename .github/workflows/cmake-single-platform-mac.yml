@@ -27,10 +27,27 @@ jobs:
           brew install boost
           echo "BOOST_ROOT=$(brew --prefix boost)" >> $GITHUB_ENV
 
+    - name: Vendor Homebrew packages into workspace
+      run: |
+          set -e
+          VENDOR_DIR="$GITHUB_WORKSPACE/cmake/third_party"
+          mkdir -p "$VENDOR_DIR"
+          BOOST_PREFIX="$(brew --prefix boost)"
+          echo "Copying boost from: $BOOST_PREFIX -> $VENDOR_DIR/boost"
+          rsync -a "$BOOST_PREFIX/" "$VENDOR_DIR/boost/"
+          # optional: also copy top-level Homebrew includes if you need them
+          if [ -d "/opt/homebrew/" ]; then
+            rsync -a /opt/homebrew/ "$VENDOR_DIR/homebrew/"
+          fi
+          ls -la "$VENDOR_DIR" || true
+
     - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBOOST_ROOT=${{env.BOOST_ROOT}} -DCMAKE_PREFIX_PATH=${{env.BOOST_ROOT}}
+      run: cmake -B "$GITHUB_WORKSPACE/build" -S "$GITHUB_WORKSPACE" -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBOOST_ROOT="$GITHUB_WORKSPACE/cmake/third_party/boost" -DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/cmake/third_party/boost"
+
+    - name: Debug copied boost
+      run: |
+        echo "Boost include preview:"
+        ls -la "$GITHUB_WORKSPACE/cmake/third_party/boost/include" | head -n 20 || true
 
     - name: Build
       # Build your program with the given configuration
