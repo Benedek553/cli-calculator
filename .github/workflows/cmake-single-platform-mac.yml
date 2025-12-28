@@ -49,7 +49,7 @@ jobs:
       run: |
         echo "Boost include preview:"
         ls -la "$GITHUB_WORKSPACE/cmake/third_party/boost/include" | head -n 20 || true
-        ls -dR "$GITHUB_WORKSPACE/cmake/third_party/boost/"
+        find "$GITHUB_WORKSPACE/cmake/third_party/boost/" -type d -print
 
     - name: Build
       # Build your program with the given configuration
