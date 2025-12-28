@@ -34,8 +34,8 @@ jobs:
           VENDOR_DIR="$GITHUB_WORKSPACE/cmake/third_party"
           mkdir -p "$VENDOR_DIR"
           BOOST_PREFIX="$(brew --prefix boost)"
-          echo "Copying boost from: $BOOST_PREFIX -> $VENDOR_DIR/boost"
-          rsync -a "$BOOST_PREFIX/" "$VENDOR_DIR/boost/"
+          echo "Copying boost from: Users/runner/work/cli-calculator/cli-calculator/cmake/third_party/boost/include/boost -> $VENDOR_DIR/boost"
+          rsync -a "/Users/runner/work/cli-calculator/cli-calculator/cmake/third_party/boost/include/boost/" "$VENDOR_DIR/boost/"
           # optional: also copy top-level Homebrew includes if you need them
           #if [ -d "/opt/homebrew/" ]; then
           #  rsync -a /opt/homebrew/ "$VENDOR_DIR/homebrew/"
