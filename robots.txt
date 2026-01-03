@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://benedek553.github.io/cli-calculator/sitemap.xml
