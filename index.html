@@ -152,9 +152,9 @@
 <header>
     <div class="brand">CLI-CALCULATOR</div>
     <nav>
-        <a href="#features">Features</a>
-        <a href="#install">Install</a>
-        <a href="https://github.com/Benedek553/cli-calculator/wiki">Docs</a>
+        <a href="/cli-calculator/docs/index#WhatYouCanDo">Features</a>
+        <a href="/cli-calculator/docs/install">Install</a>
+        <a href="/cli-calculator/docs/index">Docs</a>
         <a href="https://github.com/Benedek553/cli-calculator" target="_blank">GitHub</a>
     </nav>
 </header>
@@ -169,15 +169,15 @@
     </div>
 
     <div class="buttons">
-        <a href="/docs/getstarted" target="_blank">INSTALL</a>
-        <a href="/docs/index" target="_blank">DOCS</a>
+        <a href="/cli-calculator/docs/getstarted" target="_blank">INSTALL</a>
+        <a href="/cli-calculator/docs/index" target="_blank">DOCS</a>
     </div>
 </section>
 
 <script>
 (() => {
     // NOTE: Use \n (escaped newline) to avoid "unescaped line break" syntax errors.
-    const target = "$ cli-calculator --eval 2 * (3 + 4)\n# → 14";
+    const target = "$ cli-calculator --output json --eval 2 * (3 + 4)\n# → {"action":"eval","status":"ok","expression":"2*(3+4)","result":14}";
 
     const textEl = document.getElementById("text");
     if (!textEl) return;

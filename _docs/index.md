@@ -47,6 +47,6 @@ CLI Calculator is released under the **Apache License 2.0**.
 
 ## Next steps
 
-* Read the **[Get Started](/docs/getstarted)** guide
-* Browse the **[Command Reference](/docs/commandreference)**
+* Read the **[Get Started](cli-calculator/docs/getstarted)** guide
+* Browse the **[Command Reference](cli-calculator/docs/commandreference)**
 
