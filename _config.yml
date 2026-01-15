@@ -1,0 +1,8 @@
+title: CLI Calculator
+description: A simple command-line calculator application.
+theme: minima
+collections:
+  docs:
+    output: true
+    permalink: /docs/:path/
+
