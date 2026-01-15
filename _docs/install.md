@@ -1,8 +1,8 @@
 ---
 
-title: Installation Guide
-
 layout: page
+
+title: Installation Guide
 
 ---
 
@@ -44,7 +44,7 @@ After installation, run:
 
 calculator        # Launches the CLI menu
 
-calculator\_gui    # Launches the GUI
+calculator\\\_gui    # Launches the GUI
 
 ```
 
@@ -100,7 +100,7 @@ cd cli-calculator-ubuntu
 
 ```bash
 
-chmod +x calculator calculator\_gui
+chmod +x calculator calculator\\\_gui
 
 ```
 
@@ -112,7 +112,7 @@ chmod +x calculator calculator\_gui
 
 ```bash
 
-sudo mv calculator calculator\_gui /usr/local/bin
+sudo mv calculator calculator\\\_gui /usr/local/bin
 
 ```
 
@@ -126,7 +126,7 @@ sudo mv calculator calculator\_gui /usr/local/bin
 
 calculator        # Launches the CLI application
 
-calculator\_gui    # Launches the GUI application
+calculator\\\_gui    # Launches the GUI application
 
 ```
 
@@ -152,11 +152,7 @@ calculator\_gui    # Launches the GUI application
 
 
 
-> \*\*Note\*\*
+> \\\*\\\*Note\\\*\\\*
 
-> If Windows SmartScreen blocks the application, click \*\*More info\*\* → \*\*Run anyway\*\*.
-
-
-
-
+> If Windows SmartScreen blocks the application, click \\\*\\\*More info\\\*\\\* → \\\*\\\*Run anyway\\\*\\\*.
 

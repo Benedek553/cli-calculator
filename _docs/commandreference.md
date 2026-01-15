@@ -1,8 +1,8 @@
 ---
 
-title: CLI Flags Reference
-
 layout: page
+
+title: CLI Flags Reference
 
 ---
 
