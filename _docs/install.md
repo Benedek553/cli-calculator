@@ -44,7 +44,7 @@ After installation, run:
 
 calculator        # Launches the CLI menu
 
-calculator\\\_gui    # Launches the GUI
+calculator\_gui    # Launches the GUI
 
 ```
 
