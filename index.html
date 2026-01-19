@@ -97,8 +97,11 @@
         padding: 0;
         white-space: pre-wrap;
         font-size: 15px;
-        overflow-x: auto;
         min-height: 4.5em;
+	max-width: 100%;
+  	overflow-x: auto;
+  	white-space: pre-wrap;
+  	overflow-wrap: anywhere;
     }
 
     /* Blinking block cursor */
@@ -109,7 +112,7 @@
         margin-left: 2px;
         background: #fff;
         vertical-align: -0.15em;
-        animation: blink 1s steps(1) infinite;
+        animation: blink 0.5s steps(1) infinite;
     }
 
     @keyframes blink {
@@ -177,7 +180,7 @@
 <script>
 (() => {
     // NOTE: Use \n (escaped newline) to avoid "unescaped line break" syntax errors.
-    const target = "$ cli-calculator --output json --eval 2 * (3 + 4)\n# → {"action":"eval","status":"ok","expression":"2*(3+4)","result":14}";
+    const target = "$ calculator --eval \"653*543!\" --bigdouble --output json\n# {\"action\":\"eval\",\"status\":\"ok\",\"expression\":\"653*543!\",\"result\":5.69998186584040078318861897608204058351965117333e+1253}";
 
     const textEl = document.getElementById("text");
     if (!textEl) return;
