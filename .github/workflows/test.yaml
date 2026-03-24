@@ -1,0 +1,33 @@
+name: CI Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y cmake build-essential libboost-all-dev qtbase5-dev
+
+      - name: Configure
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DUSE_ZLIB=OFF
+
+      - name: Build
+        run: |
+          cmake --build build --config Release
+
+      - name: Run tests
+        run: |
+          ctest --test-dir build --output-on-failure

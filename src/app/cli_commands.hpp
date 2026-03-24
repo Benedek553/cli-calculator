@@ -7,7 +7,8 @@
 #include <vector>
 
 int runEval(const std::string &expression, OutputFormat outputFormat,
-            std::optional<double> *lastResult = nullptr);
+            std::optional<double> *lastResult = nullptr,
+            bool useBigInt = false, bool useBigDouble = false);
 int runSquareRoot(const std::string &number, OutputFormat outputFormat,
                   std::optional<double> *lastResult = nullptr);
 int runDivisors(const std::string &input, OutputFormat outputFormat);

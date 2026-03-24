@@ -42,6 +42,8 @@ struct CliParseResult {
   bool colorsEnabled = true;
   OutputFormat outputFormat = OutputFormat::Text;
   bool sawNonColorArgument = false;
+  bool useBigInt = false;
+  bool useBigDouble = false;
   std::optional<CliAction> action;
 };
 

@@ -559,12 +559,34 @@ void runUnitConversionMenu() {
 } // namespace
 
 void handleArithmetic() {
+  std::cout << '\n'
+            << UNDERLINE << MAGENTA << "--- Expression Evaluator ---" << RESET
+            << '\n';
+  std::cout << YELLOW << " 1) " << RESET << CYAN << "Standard (double)"
+            << RESET << '\n';
+  std::cout << YELLOW << " 2) " << RESET << CYAN << "Bigint (integers only)"
+            << RESET << '\n';
+  std::cout << YELLOW << " 3) " << RESET << CYAN
+            << "Bigdouble (high-precision decimals)" << RESET << '\n';
+  std::cout << YELLOW << " 0) " << RESET << CYAN << "Back" << RESET << '\n';
+
+  int modeChoice = readMenuChoice(0, 3);
+  if (modeChoice == 0) {
+    return;
+  }
+  bool useBigInt = modeChoice == 2;
+  bool useBigDouble = modeChoice == 3;
+
   while (true) {
-    std::cout << '\n'
-              << UNDERLINE << MAGENTA << "--- Expression Evaluator ---" << RESET
-              << '\n';
-    std::string expression =
-        readLine("Enter an expression (type 'back' to return): ");
+    std::string prompt;
+    if (useBigInt) {
+      prompt = "Enter an integer expression (type 'back' to return): ";
+    } else if (useBigDouble) {
+      prompt = "Enter a decimal expression (type 'back' to return): ";
+    } else {
+      prompt = "Enter an expression (type 'back' to return): ";
+    }
+    std::string expression = readLine(prompt);
     std::string lowered = trim(expression);
     std::transform(
         lowered.begin(), lowered.end(), lowered.begin(),
@@ -573,9 +595,19 @@ void handleArithmetic() {
       return;
     }
     try {
-      double result =
-          evaluateExpression(expression, globalVariableStore().variables());
-      std::cout << GREEN << "Result: " << RESET << result << '\n';
+      if (useBigInt) {
+        std::string result = evaluateExpressionBigInt(
+            expression, globalVariableStore().variables());
+        std::cout << GREEN << "Result: " << RESET << result << '\n';
+      } else if (useBigDouble) {
+        std::string result = evaluateExpressionBigDouble(
+            expression, globalVariableStore().variables());
+        std::cout << GREEN << "Result: " << RESET << result << '\n';
+      } else {
+        double result =
+            evaluateExpression(expression, globalVariableStore().variables());
+        std::cout << GREEN << "Result: " << RESET << result << '\n';
+      }
     } catch (const std::exception &ex) {
       std::cout << RED << "Error: " << RESET << ex.what() << '\n';
     }
@@ -622,6 +654,7 @@ void handleDivisors() {
     long long value = readInteger("Enter an integer (0 allowed): ");
     if (value == 0) {
       std::cout << RED << "Zero has infinitely many divisors." << RESET << '\n';
+      continue;
     } else {
       try {
         std::vector<long long> divisors = calculateDivisors(value);
@@ -703,9 +736,14 @@ void handleEquations() {
               << RESET << '\n';
     std::cout << YELLOW << " 2) " << RESET << CYAN
               << "Quadratic (a * x^2 + b * x + c = 0)" << RESET << '\n';
+    std::cout << YELLOW << " 3) " << RESET << CYAN
+              << "Cubic (a * x^3 + b * x^2 + c * x + d = 0)" << RESET << '\n';
+    std::cout << YELLOW << " 4) " << RESET << CYAN
+              << "Linear system 2x2 (a1*x + b1*y = c1, a2*x + b2*y = c2)"
+              << RESET << '\n';
     std::cout << YELLOW << " 0) " << RESET << CYAN << "Back" << RESET << '\n';
 
-    int choice = readMenuChoice(0, 2);
+    int choice = readMenuChoice(0, 4);
     switch (choice) {
     case 0:
       return;
@@ -720,6 +758,24 @@ void handleEquations() {
       double b = readDouble("Enter coefficient b: ");
       double c = readDouble("Enter coefficient c: ");
       solveQuadraticEquation(a, b, c);
+      break;
+    }
+    case 3: {
+      double a = readDouble("Enter coefficient a: ");
+      double b = readDouble("Enter coefficient b: ");
+      double c = readDouble("Enter coefficient c: ");
+      double d = readDouble("Enter coefficient d: ");
+      solveCubicEquation(a, b, c, d);
+      break;
+    }
+    case 4: {
+      double a1 = readDouble("Enter coefficient a1: ");
+      double b1 = readDouble("Enter coefficient b1: ");
+      double c1 = readDouble("Enter coefficient c1: ");
+      double a2 = readDouble("Enter coefficient a2: ");
+      double b2 = readDouble("Enter coefficient b2: ");
+      double c2 = readDouble("Enter coefficient c2: ");
+      solveLinearSystem2x2(a1, b1, c1, a2, b2, c2);
       break;
     }
     default:

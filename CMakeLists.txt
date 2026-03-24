@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(cli-calculator VERSION 1.7 LANGUAGES CXX)
+project(cli-calculator VERSION 2.2.0 LANGUAGES CXX)
 
 # Recommended: out-of-source builds
 set(CMAKE_CXX_STANDARD 17)
@@ -103,4 +103,10 @@ endif()
 
 install(TARGETS divisors calculator
         RUNTIME DESTINATION bin)
+
+if(TARGET calculator_gui)
+  install(TARGETS calculator_gui
+          BUNDLE DESTINATION .)
+endif()
+
 

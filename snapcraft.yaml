@@ -1,73 +1,81 @@
 name: cli-calculator
-title: CLI Calculator
 base: core22
-version: '1.7'
-license: Apache-2.0
-source-code:
-  - https://github.com/Benedek553/cli-calculator
-issues:
-  - https://github.com/Benedek553/cli-calculator/issues
-summary: Simple CLI calculator
+version: "2.1.0"
+summary: Simple CLI calculator with GUI
+title: CLI Calculator
+website: https://benedek553.github.io/cli-calculator/
+source-code: https://github.com/Benedek553/cli-calculator
+issues: https://github.com/Benedek553/cli-calculator/issues
 icon: icon.png
 description: |
-  CLI Calculator is a lightweight yet full-featured command-line toolkit that lets you evaluate expressions, convert number bases, solve equations, work with matrices, and inspect divisors without ever leaving the terminal. It targets developers, power users, and anyone who appreciates deterministic C++ utilities.
-
-  **Highlights**
-
-  * Evaluate arbitrarily long expressions with `+ - * / x :`, parentheses, factorial, and built-in math functions such as `sin`, `cos`, `log`, `sqrt`, `tan`, `exp`, and `sinh`
-  * Convert signed integers between binary (`0b`), decimal, and hexadecimal (`0x`) inputs or outputs in one command
-  * Convert measurement units (length, mass, volume, temperature) with CLI flags or guided prompts
-  * Solve linear (`a * x + b = 0`) and quadratic (`a * x^2 + b * x + c = 0`) equations, including complex roots
-  * Run matrix workflows (add, subtract, multiply) for arbitrarily sized matrices with validation before each operation
-  * Visualize number series by entering them manually or loading CSV columns, previewing the ASCII graph, then exporting a labeled PNG chart
-  * Perform prime factorization and divisor lookups optimized for large integers
-  * Inspect or edit persisted variables (`vars.toml`) so you can reuse values in future sessions or in scripts
-
-  **CLI workflows**
-
-  * `cli-calculator` launches the interactive menu (matrix tools, equation solver, prime factorization, divisors, variable manager, etc.)
-  * `cli-calculator --repl` opens an instant read–eval–print loop with history (`:history`, `!<n>`) and autocompletion-like shortcuts
-  * `cli-calculator --eval "2*(3+5)"` evaluates expressions headlessly; combine with `--output json|yaml|xml` for script-friendly responses
-  * `cli-calculator --convert 10 16 42`, `--unit-convert length m km 1234`, `--divisors 120`, `--prime-factorization 32768`, and `--square-root 625` provide single-shot utilities without entering the menu
-  * `cli-calculator --solve-quadratic 1 -3 2` and `--matrix-add "1 2; 3 4" "5 6; 7 8"` run equation and matrix tools from scripts
-  * `cli-calculator --stats 1 2 3 4 5` summarizes datasets, while `--graph-values graph.png 1 3 2 5` exports a PNG with an ASCII preview
-  * `cli-calculator --graph-csv graph.png data.csv 2 --no-headers` renders a CSV column into a labeled chart
-  * `cli-calculator --set-variable tax_rate 0.27` and `--unset-variable old_value` manage persisted variables without the menu
-  * `cli-calculator --report-bug` opens the issue template in your browser
-  * `cli-calculator --batch tasks.txt` executes a list of commands with helper directives (`@set`, `@input`, `@include`, `@if`, `@unset`) so you can automate repetitive calculations
-  * Graph utility (menu option 10) walks you through picking manual/CSV data, ASCII preview height, and the PNG filename so you can share charts without leaving the terminal
-
-  **Usage tips**
-
-  * Variables and batch directives let you reuse previous results; numerical CLI flags accept variable names as arguments
-  * `--variables` (or `--list-variables`) prints the persisted values, and `--version` reports the build without launching the UI
-  * ANSI colors are enabled by default; disable them with `--no-color`
-  * Works great inside scripts, containers, CI pipelines, or minimal environments—there are no runtime dependencies beyond libstdc++
+  cli-calculator provides a full-featured command-line calculator with
+  expression evaluation, conversions, equations, matrices, and statistics.
+  It also ships an optional Qt GUI that wraps the same calculation engine.
+license: Apache-2.0
 grade: stable
 confinement: strict
 
 apps:
   cli-calculator:
-    command: bin/calculator
-    plugs: [home]
+    command: usr/bin/calculator
+    plugs:
+      - home
+    environment:
+      LC_ALL: C
+      LANG: C
+  divisors:
+    command: usr/bin/divisors
+    plugs:
+      - home
+    environment:
+      LC_ALL: C
+      LANG: C
+  gui:
+    command: usr/bin/calculator_gui
+    desktop: snap/gui/cli-calculator.desktop
+    extensions:
+      - kde-neon
+    plugs:
+      - desktop
+      - desktop-legacy
+      - wayland
+      - x11
+      - opengl
+      - home
+    environment:
+      LC_ALL: C
+      LANG: C
 
 parts:
   cli-calculator:
     plugin: cmake
     source: .
     cmake-parameters:
-      - -DBUILD_TESTING=OFF
-    override-pull: |
-      craftctl default
-      # Remove host-generated CMake artifacts that break in-snap builds
-      find . -name CMakeCache.txt -delete
-      find . -name CMakeFiles -type d -prune -exec rm -rf {} +
-      rm -rf build
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_GUI=ON
+      - -DCMAKE_INSTALL_PREFIX=/usr
+      - -DQT_MAJOR_VERSION=5
     build-packages:
-      - build-essential
-      - cmake
       - g++
+      - cmake
+      - make
+      - pkg-config
+      - libboost-dev
+      - zlib1g-dev
+      - qtbase5-dev
     stage-packages:
+      - locales
+      - zlib1g
       - libstdc++6
-    organize:
-      usr/local/bin/calculator: bin/calculator
+      - libgcc-s1
+      - python3
+      - libqt5widgets5
+      - libqt5gui5
+      - libqt5core5a
+      - libqt5dbus5
+      - libqt5network5
+      - libqt5svg5
+      - qtwayland5
+      - libx11-6
+      - libxkbcommon0
+      - libgl1

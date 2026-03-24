@@ -1,0 +1,95 @@
+name: CMake pipeline for Windows build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (MSYS2)
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-pkg-config
+            mingw-w64-x86_64-boost
+            mingw-w64-x86_64-boost-libs
+            mingw-w64-x86_64-qt5-base
+            mingw-w64-x86_64-qt5-tools
+            mingw-w64-x86_64-zlib
+            mingw-w64-x86_64-zstd
+            mingw-w64-x86_64-glib2
+            mingw-w64-x86_64-harfbuzz
+            mingw-w64-x86_64-icu
+            mingw-w64-x86_64-pcre2
+            mingw-w64-x86_64-graphite2
+            mingw-w64-x86_64-freetype
+            mingw-w64-x86_64-gettext
+            mingw-w64-x86_64-bzip2
+            mingw-w64-x86_64-brotli
+            mingw-w64-x86_64-libiconv
+            mingw-w64-x86_64-md4c
+            mingw-w64-x86_64-gcc-libs
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-angleproject
+            mingw-w64-x86_64-double-conversion
+            mingw-w64-x86_64-libpng
+            mingw-w64-x86_64-gettext-runtime
+
+      - name: Configure CMake
+        shell: msys2 {0}
+        run: |
+          cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_PREFIX_PATH=/mingw64 \
+            -DCMAKE_C_COMPILER=gcc \
+            -DCMAKE_CXX_COMPILER=g++
+
+      - name: Build with Ninja
+        shell: msys2 {0}
+        run: |
+          cmake --build build --config ${{ env.BUILD_TYPE }}
+
+      - name: Run tests
+        shell: msys2 {0}
+        run: |
+          cd build
+          ctest --output-on-failure
+
+      - name: Deploy application
+        shell: msys2 {0}
+        run: |
+          mkdir -p dist
+
+          cp build/src/calculator_gui.exe dist/
+          cp build/src/calculator.exe dist/
+          cp build/src/divisors.exe dist/
+
+          windeployqt --dir dist dist/calculator_gui.exe
+
+          cp /mingw64/bin/libgcc_s_seh-1.dll dist/
+          cp /mingw64/bin/libstdc++-6.dll dist/
+          cp /mingw64/bin/libwinpthread-1.dll dist/
+          cp /mingw64/bin/zlib1.dll dist/
+          cp /mingw64/bin/*.dll dist/
+          cp /mingw64/bin/libboost_*.dll dist/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: calculator-windows-dist
+          path: dist/

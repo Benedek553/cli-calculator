@@ -43,3 +43,20 @@ TEST(EquationTest, QuadraticEquation)
     EXPECT_NE(output.find("x1 = 3"), std::string::npos);
     EXPECT_NE(output.find("x2 = 2"), std::string::npos);
 }
+
+TEST(EquationTest, CubicEquation)
+{
+    setColorsEnabled(false);
+    std::string output = captureOutput([]()
+                                       { solveCubicEquation(1.0, 0.0, 0.0, -1.0); });
+    EXPECT_NE(output.find("One real solution"), std::string::npos);
+}
+
+TEST(EquationTest, LinearSystem2x2)
+{
+    setColorsEnabled(false);
+    std::string output =
+        captureOutput([]() { solveLinearSystem2x2(1.0, 1.0, 3.0, 2.0, -1.0, 0.0); });
+    EXPECT_NE(output.find("x = 1"), std::string::npos);
+    EXPECT_NE(output.find("y = 2"), std::string::npos);
+}

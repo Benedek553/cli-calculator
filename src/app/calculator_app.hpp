@@ -9,7 +9,8 @@ public:
   int run(int argc, char **argv);
 
 private:
-  static std::optional<int> executeCliAction(const CliParseResult &parseResult) ;
+  static std::optional<int> executeCliAction(const CliParseResult &parseResult);
 
-  static int dispatchAction(const CliAction &action, OutputFormat format);
+  static int dispatchAction(const CliAction &action, OutputFormat format,
+                            bool useBigInt, bool useBigDouble);
 };

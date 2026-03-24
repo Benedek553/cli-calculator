@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=CLI Calculator
+Comment=CLI calculator with an optional Qt GUI
+Exec=cli-calculator.gui %U
+Icon=${SNAP}/meta/gui/cli-calculator.png
+Terminal=false
+Type=Application
+Categories=Utility;Calculator;
+Keywords=calculator;math;conversion;equation;
+StartupNotify=true

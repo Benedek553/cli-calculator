@@ -1,0 +1,191 @@
+name: Release
+permissions:
+  contents: write
+  actions: read
+on:
+  workflow_dispatch
+env:
+  BUILD_TYPE: Release
+jobs:
+  build-on-ubuntu:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install libboost
+      run: sudo apt-get update && sudo apt-get install -y libboost-all-dev qtbase5-dev
+      
+    - name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      # Execute tests defined by the CMake configuration.
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      run: ctest -C ${{env.BUILD_TYPE}}
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: cli-calculator-ubuntu
+        path: |
+          ${{github.workspace}}/build/src/calculator*
+          ${{github.workspace}}/build/src/divisors*
+        if-no-files-found: warn
+
+  build-on-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (MSYS2)
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-pkg-config
+            mingw-w64-x86_64-boost
+            mingw-w64-x86_64-boost-libs
+            mingw-w64-x86_64-qt5-base
+            mingw-w64-x86_64-qt5-tools
+            mingw-w64-x86_64-zlib
+            mingw-w64-x86_64-zstd
+            mingw-w64-x86_64-glib2
+            mingw-w64-x86_64-harfbuzz
+            mingw-w64-x86_64-icu
+            mingw-w64-x86_64-pcre2
+            mingw-w64-x86_64-graphite2
+            mingw-w64-x86_64-freetype
+            mingw-w64-x86_64-gettext
+            mingw-w64-x86_64-bzip2
+            mingw-w64-x86_64-brotli
+            mingw-w64-x86_64-libiconv
+            mingw-w64-x86_64-md4c
+            mingw-w64-x86_64-gcc-libs
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-angleproject
+            mingw-w64-x86_64-double-conversion
+            mingw-w64-x86_64-libpng
+            mingw-w64-x86_64-gettext-runtime
+
+      - name: Configure CMake
+        shell: msys2 {0}
+        run: |
+          cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_PREFIX_PATH=/mingw64 \
+            -DCMAKE_C_COMPILER=gcc \
+            -DCMAKE_CXX_COMPILER=g++
+
+      - name: Build with Ninja
+        shell: msys2 {0}
+        run: |
+          cmake --build build --config ${{ env.BUILD_TYPE }}
+
+      - name: Run tests
+        shell: msys2 {0}
+        run: |
+          cd build
+          ctest --output-on-failure
+
+      - name: Deploy application
+        shell: msys2 {0}
+        run: |
+          mkdir -p dist
+
+          cp build/src/calculator_gui.exe dist/
+          cp build/src/calculator.exe dist/
+          cp build/src/divisors.exe dist/
+
+          windeployqt --dir dist dist/calculator_gui.exe
+
+          cp /mingw64/bin/libgcc_s_seh-1.dll dist/
+          cp /mingw64/bin/libstdc++-6.dll dist/
+          cp /mingw64/bin/libwinpthread-1.dll dist/
+          cp /mingw64/bin/zlib1.dll dist/
+          cp /mingw64/bin/*.dll dist/
+          cp /mingw64/bin/libboost_*.dll dist/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: calculator-windows-dist
+          path: dist/
+  build-on-macos:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install boost
+      run: brew install boost qt@5 qwt-qt5
+    - name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: |
+        export CMAKE_PREFIX_PATH=$(brew --prefix qt@5)
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBOOST_ROOT=$(brew --prefix boost) -DQT_MAJOR_VERSION=5
+
+    - name: Build
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      # Execute tests defined by the CMake configuration.
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      run: ctest -C ${{env.BUILD_TYPE}}
+
+    - name: Package app
+      run: |
+        export PATH=$(brew --prefix qt@5)/bin:$PATH
+        macdeployqt ${{github.workspace}}/build/src/calculator_gui.app -dmg -codesign="-"
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: cli-calculator-macos
+        path: |
+          ${{github.workspace}}/build/src/calculator*
+          ${{github.workspace}}/build/src/divisors*
+          ${{github.workspace}}/build/src/calculator_gui.dmg
+        if-no-files-found: warn
+
+  create-release:
+    needs:
+    - build-on-ubuntu
+    - build-on-windows
+    - build-on-macos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download builds
+        uses: actions/download-artifact@v7.0.0
+        with:
+          path: artifacts/
+      - name: Create draft release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          tag_name: v${{ github.run_number }}
+          name: "CLI Calculator #${{ github.run_number }}"
+          files: artifacts/
+          body: |
+            ⚙️ Automated draft release for CLI Calculator.
+
+            - Build type: Release
+            - Triggered by: ${{ github.actor }}
+            - Commit: ${{ github.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -41,3 +41,9 @@ TEST(ExpressionTest, Variables)
     EXPECT_NEAR(evaluateExpression("pi * 2", vars), 6.283185307179586, 1e-12);
     EXPECT_NEAR(evaluateExpression("pi + x", vars), 5.641592653589793, 1e-12);
 }
+
+TEST(ExpressionTest, BigDoubleArithmetic)
+{
+    EXPECT_EQ(evaluateExpressionBigDouble("0.1 + 0.2"), "0.3");
+    EXPECT_EQ(evaluateExpressionBigDouble("2^10"), "1024");
+}

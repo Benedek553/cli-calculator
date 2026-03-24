@@ -69,3 +69,4 @@ tests/_deps/*
 tests/*.log
 Testing/
 *.tcl
+build-test/
