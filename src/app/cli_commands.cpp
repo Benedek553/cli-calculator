@@ -266,12 +266,24 @@ bool parseGraphHeight(const std::string &token, std::size_t &height,
 }
 
 void openUrl(const std::string &url) {
-  int ret = std::system("command -v snapctl >/dev/null 2>&1");
-  if (ret == 0) {
-    std::system(("snapctl user-open " + url).c_str());
-  } else {
-    std::system(("xdg-open " + url).c_str());
-  }
+#if defined(__linux__)
+    int ret = std::system("command -v snapctl >/dev/null 2>&1");
+    if (ret == 0) {
+        std::system(("snapctl user-open \"" + url + "\"").c_str());
+    } else {
+        std::system(("xdg-open \"" + url + "\"").c_str());
+    }
+
+#elif defined(_WIN32)
+    std::system(("start \"\" \"" + url + "\"").c_str());
+
+#elif defined(__APPLE__)
+    std::system(("open \"" + url + "\"").c_str());
+
+#else
+    std::cout << YELLOW << "Warning: unable to open URL on this platform. Please open the following URL manually:\n"
+              << url << RESET << std::endl;
+#endif
 }
 } // namespace
 
