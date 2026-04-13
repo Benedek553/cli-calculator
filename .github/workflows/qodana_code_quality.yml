@@ -17,12 +17,24 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.sha }}  # to check out the actual pull request commit, not the merge commit
-          fetch-depth: 0  # a full history is required for pull request analysis
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Install dependencies
+        run: sudo apt-get install -y zlib1g-dev libboost-all-dev qtbase5-dev
+      - name: Configure CMake
+        run: |
+          mkdir -p build
+          cd build
+          cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      - name: Verify compile_commands.json
+        run: |
+          ls -l build
+          cat build/compile_commands.json
       - name: 'Qodana Scan'
         uses: JetBrains/qodana-action@v2025.2.1
         with:
           pr-mode: false
+          args: --property=qodana.cpp.compilation.database.path=build/compile_commands.json
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_678069308 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'

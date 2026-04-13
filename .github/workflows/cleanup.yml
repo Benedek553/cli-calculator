@@ -25,7 +25,7 @@ jobs:
 
           # Kiszűrés
           ids=$(jq -r --arg cutoff "$cutoff" \
-            '. | select(.created_at < $cutoff) | .id' releases.json)
+            '. | select(.created_at < $cutoff) | .id' releases.json | tr '\n' ' ')
 
           echo "ids=$ids" >> $GITHUB_OUTPUT
         env:
